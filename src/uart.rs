@@ -160,6 +160,7 @@ use std::os::unix::io::{AsRawFd, RawFd};
 use std::path::Path;
 use std::result;
 use std::time::Duration;
+use std::str;
 
 use libc::{c_int, O_NOCTTY, O_NONBLOCK};
 use libc::{TIOCM_CAR, TIOCM_CTS, TIOCM_DSR, TIOCM_DTR, TIOCM_RNG, TIOCM_RTS};
@@ -439,7 +440,7 @@ impl Uart {
     /// 15, and then calls [`with_path`] with the appropriate device path.
     ///
     /// [`with_path`]: #method.with_path
-    pub fn new(baud_rate: u32, parity: Parity, data_bits: u8, stop_bits: u8) -> Result<Uart> {
+    pub fn setup(baud_rate: u32, parity: Parity, data_bits: u8, stop_bits: u8) -> Result<Uart> {
         Self::with_path("/dev/serial0", baud_rate, parity, data_bits, stop_bits)
     }
 
@@ -447,13 +448,18 @@ impl Uart {
     /// specified by `path`.
     ///
     /// `with_path` can be used to connect to either a UART peripheral or a USB
-    /// to serial adapter.
     ///
+    /// to serial adapter.
     /// When a new `Uart` is constructed, the specified device is configured
     /// for non-canonical mode which processes input per character, ignores any
     /// special terminal input or output characters and disables local echo. DCD
     /// is ignored, all flow control is disabled, and the input and output queues
     /// are flushed.
+    pub fn new(baud_rate: u32) -> Result<Uart> {
+        Self::with_path("dev/serial0", baud_rate, Parity::None, 8, 1)
+    }
+    ///
+
     pub fn with_path<P: AsRef<Path>>(
         path: P,
         baud_rate: u32,
@@ -922,7 +928,7 @@ impl Uart {
     /// Returns how many bytes were read.
     ///
     /// [`set_read_mode`]: #method.set_read_mode
-    pub fn read(&mut self, buffer: &mut [u8]) -> Result<usize> {
+    pub fn read_bytes(&mut self, buffer: &mut [u8]) -> Result<usize> {
         self.inner.device.read(buffer).or_else(|e| {
             if e.kind() == io::ErrorKind::WouldBlock {
                 Ok(0)
@@ -931,6 +937,15 @@ impl Uart {
             }
         })
     }
+
+    pub fn read(&mut self) -> Result<String> {
+        let mut buffer = [0u8; 255];
+        let k = self.read_bytes(&mut buffer)?;
+        //let mut out = String::with_capacity(255);
+        let out = str::from_utf8(&buffer[0..k]).unwrap().to_string();
+        Ok(out)
+    }
+
 
     /// Sends the contents of `buffer` to the external device.
     ///
@@ -941,7 +956,7 @@ impl Uart {
     /// Returns how many bytes were written.
     ///
     /// [`set_write_mode`]: #method.set_write_mode
-    pub fn write(&mut self, buffer: &[u8]) -> Result<usize> {
+    pub fn write_bytes(&mut self, buffer: &[u8]) -> Result<usize> {
         // We only need to toggle O_NONBLOCK when read() is configured as
         // blocking. If read() is non-blocking, either with_path() or
         // set_read_mode() will have already enabled O_NONBLOCK.
@@ -966,6 +981,10 @@ impl Uart {
         }
 
         result
+    }
+
+    pub fn write(&mut self, message : String) -> Result<usize>{
+        self.write_bytes(message.as_bytes())
     }
 
     /// Blocks until all data in the output queue has been transmitted.

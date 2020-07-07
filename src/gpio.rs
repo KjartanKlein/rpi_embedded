@@ -387,6 +387,27 @@ impl Gpio {
             Ok(Gpio { inner: gpio_state })
         }
     }
+    pub fn output(&mut self,pin : u8) -> Result<pin::OutputPin>{
+            let gp = Gpio::new()?.get(pin)?.into_output();
+            Ok(gp)
+    }
+    pub fn input(&mut self,pin : u8) -> Result<pin::InputPin>{
+            let gp = Gpio::new()?.get(pin)?.into_input();
+            Ok(gp)
+    }
+    pub fn io(&mut self,pin : u8, mode : Mode) -> Result<pin::IoPin>{
+            let gp = Gpio::new()?.get(pin)?.into_io(mode);
+            Ok(gp)
+    }
+    pub fn pulldown(&mut self,pin : u8) -> Result<pin::InputPin>{
+            let gp = Gpio::new()?.get(pin)?.into_input_pulldown();
+            Ok(gp)
+    }
+    pub fn pullup(&mut self,pin : u8) -> Result<pin::InputPin>{
+            let gp = Gpio::new()?.get(pin)?.into_input_pullup();
+            Ok(gp)
+    }
+
 
     /// Returns a [`Pin`] for the specified BCM GPIO pin number.
     ///

@@ -1,11 +1,11 @@
 [package]
-name = "rppal"
-version = "0.11.3" # Also update html_root_url in lib.rs
-edition = "2018"
-authors = ["Rene van der Meer <rene@golemparts.com>"]
+name = "rppal_w_frontend"
+version = "" # Also update html_root_url in lib.rs
+edition = "2020"
+authors = ["Kjartan Bjarmi Arnason Klein <kjartanbklein@gmail.com>"]
 description = "Interface for the Raspberry Pi's GPIO, I2C, PWM, SPI and UART peripherals."
 documentation = "https://docs.golemparts.com/rppal"
-repository = "https://github.com/golemparts/rppal"
+repository = "https://github.com/KjartanKlein/rppal"
 readme = "README.md"
 license = "MIT"
 categories = ["embedded", "hardware-support"]
@@ -23,5 +23,3 @@ simple-signal = "1.1.1"
 
 [features]
 default = []
-hal = ["nb", "void", "embedded-hal"]
-hal-unproven = ["nb", "embedded-hal/unproven", "hal"]
