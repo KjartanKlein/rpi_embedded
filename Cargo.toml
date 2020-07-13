@@ -1,7 +1,7 @@
 [package]
 name = "rppal_w_frontend"
-version = "" # Also update html_root_url in lib.rs
-edition = "2020"
+version = "0.0.2" # Also update html_root_url in lib.rs
+edition = "2018"
 authors = ["Kjartan Bjarmi Arnason Klein <kjartanbklein@gmail.com>"]
 description = "Interface for the Raspberry Pi's GPIO, I2C, PWM, SPI and UART peripherals."
 documentation = "https://docs.golemparts.com/rppal"
