@@ -23,7 +23,7 @@
 use std::error::Error;
 use std::time::Duration;
 
-use rppal::uart::{Parity, Uart};
+use rppal_w_frontend::uart::{Parity, Uart};
 
 fn main() -> Result<(), Box<dyn Error>> {
     // Connect to the primary UART and configure it for 115.2 kbit/s, no
@@ -36,7 +36,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut buffer = [0u8; 1];
     loop {
         // Fill the buffer variable with any incoming data.
-        if uart.read(&mut buffer)? > 0 {
+        if uart.read_bytes(&mut buffer)? > 0 {
             println!("Received byte: {}", buffer[0]);
         }
     }

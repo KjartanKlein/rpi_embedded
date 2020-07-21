@@ -37,7 +37,7 @@ use std::error::Error;
 use std::thread;
 use std::time::Duration;
 
-use rppal::pwm::{Channel, Polarity, Pwm};
+use rppal_w_frontend::pwm::{Channel, Polarity, Pwm};
 
 // Servo configuration. Change these values based on your servo's verified safe
 // minimum and maximum values.

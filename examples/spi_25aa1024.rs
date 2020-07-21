@@ -22,7 +22,7 @@
 
 use std::error::Error;
 
-use rppal::spi::{Bus, Mode, Segment, SlaveSelect, Spi};
+use rppal_w_frontend::spi::{Bus, Mode, Segment, SlaveSelect, Spi};
 
 // Instruction set.
 const WRITE: u8 = 0b0010; // Write data, starting at the selected address.

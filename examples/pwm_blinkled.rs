@@ -32,7 +32,7 @@ use std::error::Error;
 use std::thread;
 use std::time::Duration;
 
-use rppal::pwm::{Channel, Polarity, Pwm};
+use rppal_w_frontend::pwm::{Channel, Polarity, Pwm};
 
 fn main() -> Result<(), Box<dyn Error>> {
     // Enable PWM channel 0 (BCM GPIO 18, physical pin 12) at 2 Hz with a 25% duty cycle.

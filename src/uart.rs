@@ -440,7 +440,7 @@ impl Uart {
     /// 15, and then calls [`with_path`] with the appropriate device path.
     ///
     /// [`with_path`]: #method.with_path
-    pub fn setup(baud_rate: u32, parity: Parity, data_bits: u8, stop_bits: u8) -> Result<Uart> {
+    pub fn new(baud_rate: u32, parity: Parity, data_bits: u8, stop_bits: u8) -> Result<Uart> {
         Self::with_path("/dev/serial0", baud_rate, parity, data_bits, stop_bits)
     }
 
@@ -455,11 +455,10 @@ impl Uart {
     /// special terminal input or output characters and disables local echo. DCD
     /// is ignored, all flow control is disabled, and the input and output queues
     /// are flushed.
-    pub fn new(baud_rate: u32) -> Result<Uart> {
-        Self::with_path("dev/serial0", baud_rate, Parity::None, 8, 1)
+    pub fn new_bt(baud_rate: u32, parity: Parity, data_bits: u8, stop_bits: u8) -> Result<Uart> {
+        Self::with_path("/dev/rfcomm0", baud_rate, parity, data_bits, stop_bits)
     }
     ///
-
     pub fn with_path<P: AsRef<Path>>(
         path: P,
         baud_rate: u32,

@@ -25,7 +25,7 @@ use std::error::Error;
 use std::thread;
 use std::time::Duration;
 
-use rppal::i2c::I2c;
+use rppal_w_frontend::i2c::I2c;
 
 // DS3231 I2C default slave address.
 const ADDR_DS3231: u16 = 0x68;

@@ -38,7 +38,7 @@ use std::error::Error;
 use std::thread;
 use std::time::Duration;
 
-use rppal::gpio::Gpio;
+use rppal_w_frontend::gpio::Gpio;
 
 // Gpio uses BCM pin numbering. BCM GPIO 23 is tied to physical pin 16.
 const GPIO_PWM: u8 = 23;
