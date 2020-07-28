@@ -25,8 +25,8 @@ use std::error::Error;
 use std::fmt;
 use std::process;
 
-use rppal_w_frontend::gpio::Gpio;
-use rppal_w_frontend::system::{DeviceInfo, Model};
+use rpi_embedded::gpio::Gpio;
+use rpi_embedded::system::{DeviceInfo, Model};
 
 enum PinType {
     Gpio(u8),

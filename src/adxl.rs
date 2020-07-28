@@ -168,6 +168,7 @@ impl Adxl {
             self.data[0] = (self.raw_data[0] as u16  +(self.raw_data[1] as u16).rotate_right(8)) as i16;
             self.data[1] = (self.raw_data[2] as u16  +(self.raw_data[3] as u16).rotate_right(8)) as i16;
             self.data[2] = (self.raw_data[4] as u16  +(self.raw_data[5] as u16).rotate_right(8)) as i16;
+            self.rotations();
     }
     pub fn rotations(&mut self){
         let x = self.data[0] as f64;

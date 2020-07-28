@@ -32,17 +32,45 @@ use std::error::Error;
 use std::thread;
 use std::time::Duration;
 
-use rppal_w_frontend::gpio::Gpio;
+use rpi_embedded::gpio::{Mode, Gpio};
 
 // Gpio uses BCM pin numbering. BCM GPIO 23 is tied to physical pin 16.
-const GPIO_LED: u8 = 23;
+const GPIO_LED_0: u8 = 16;
+const GPIO_LED_1: u8 = 20;
+const GPIO_LED_2: u8 = 21;
+
 
 fn main() -> Result<(), Box<dyn Error>> {
     // Retrieve the GPIO pin and configure it as an output.
-    let mut pin = Gpio::new()?.get(GPIO_LED)?.into_output();
-
+    // This is the longest method to get stuff done but it is used in other moethods
+    let mut pin_0 = Gpio::new()?.get(GPIO_LED_0)?.into_output();
+    let mut pin_1 = Gpio::output(GPIO_LED_1)?;
+    let mut pin_2 = Gpio::io(GPIO_LED_2, Mode::Output)?; //This one can switch between input and output easily, use with caution
     loop {
-        pin.toggle();
+        //set the LEDS one by one to high
+        pin_0.set_high();
+        thread::sleep(Duration::from_millis(500));
+        pin_1.set_high();
+        thread::sleep(Duration::from_millis(500));
+        pin_2.set_high();
+        thread::sleep(Duration::from_millis(500));
+        //set the LEDS one by one to low
+        pin_0.set_low();
+        thread::sleep(Duration::from_millis(500));
+        pin_1.set_low();
+        thread::sleep(Duration::from_millis(500));
+        pin_2.set_low();
+        thread::sleep(Duration::from_millis(500));
+        //toggle all pins
+        pin_1.toggle();
+        pin_0.toggle();
+        pin_2.toggle();
+        thread::sleep(Duration::from_millis(500));
+        //toggle all pins
+        pin_1.toggle();
+        pin_0.toggle();
+        pin_2.toggle();
         thread::sleep(Duration::from_millis(500));
     }
+
 }

@@ -32,19 +32,25 @@ use std::error::Error;
 use std::thread;
 use std::time::Duration;
 
-use rppal_w_frontend::pwm::{Channel, Polarity, Pwm};
+use rpi_embedded::pwm::{Channel, Polarity, Pwm};
 
 fn main() -> Result<(), Box<dyn Error>> {
-    // Enable PWM channel 0 (BCM GPIO 18, physical pin 12) at 2 Hz with a 25% duty cycle.
-    let pwm = Pwm::with_frequency(Channel::Pwm0, 2.0, 0.25, Polarity::Normal, true)?;
+    // Enable PWM channel 0 (BCM GPIO 18, physical pin 12) at 2 hz with a 50% duty cycle.
+    let pwm = Pwm::with_period(Channel::Pwm0, Duration::from_millis(500), Duration::from_millis(250), Polarity::Normal, true)?;
 
     // Sleep for 2 seconds while the LED blinks.
     thread::sleep(Duration::from_secs(2));
 
-    // Reconfigure the PWM channel for an 8 Hz frequency, 50% duty cycle.
-    pwm.set_frequency(8.0, 0.5)?;
+    // Reconfigure the PWM channel for an 10% duty cycle by changing the duration and PW
+    pwm.set_period(Duration::from_millis(1000))?;
+    pwm.set_pulse_width(Duration::from_millis(100))?;
 
     thread::sleep(Duration::from_secs(3));
+    //Turning the signal upside down
+    pwm.set_polarity(Polarity::Inverse)?;
+    thread::sleep(Duration::from_secs(3));
+    //and off
+    pwm.disable()?;
 
     Ok(())
 
