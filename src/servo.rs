@@ -8,12 +8,9 @@ pub struct Servo {
         pin: Pwm,
         pub min_us: u16,
         pub max_us: u16 ,
-        pub neutral_us: u16,
         pub enable:bool ,
-        pub duty_cycle: u16,
-
+        pub period: u64,
         channel: u8,
-        polarity: bool ,
 }
 
 
@@ -33,19 +30,41 @@ impl Servo {
             pin: _pwm,
             min_us: 500 ,
             max_us: 2500 ,
-            neutral_us: 1500,
             enable: false ,
-            duty_cycle: 20,
+            period: 20,
 
             channel: n_channel,
-            polarity: true,
         }
 
     }
 
+    pub fn set_min_max(&mut self,min:u16,max:u16){
+        self.min_us = min;
+        self.max_us = max;
+    }
+    pub fn set_period(&mut self, perio:u64){
+        self.period = perio;
+        self.pin.set_period(Duration::from_millis(perio)).expect("failed in setting period");
+    }
+
+    pub fn enable(&mut self){
+            self.enable = true;
+            if !self.pin.is_enabled().expect("cant read enable status"){
+                self.pin.enable().expect("cant enable");
+            }
+    }
+    pub fn disable(&mut self){
+            self.enable = false;
+            if self.pin.is_enabled().expect("cant read enable status"){
+                self.pin.disable().expect("cant enable");
+            }
+    }
+    pub fn motor_mode(&mut self){
+        self.write_pwm(2750).expect("cant write pwm in motor mode");
+    }
 
     pub fn write(&mut self, value:u8) -> Result<u64,u64>{
-        let n_value = ((500.0 + (value as f64)*11.11).floor()) as u64;
+        let n_value = ((self.min_us as f64 + (value as f64)*((self.max_us - self.min_us)as f64/180.0)).floor()) as u64;
         let ok:bool;
         match self.pin.set_pulse_width(Duration::from_micros(n_value)) {
             Ok(_) => ok = true,
@@ -70,5 +89,23 @@ impl Servo {
         }
 
     }
-
+    pub fn is_enabled(&mut self)->bool{
+            self.pin.is_enabled().expect("cant read pwm")
+    }
+    pub fn get_min(&mut self) -> u16{
+        self.min_us
+    }
+    pub fn get_max(&mut self) -> u16{
+        self.max_us
+    }
+    pub fn get_period(&mut self) -> Result<u64,u64>{
+        let t : u64 = self.pin.period().expect("can read period").as_millis() as u64;
+        if t == self.period {
+            Ok(t)
+        }
+        else {Err(t)}
+    }
+    pub fn get_channel(&mut self)->u8{
+        self.channel
+    }
 }

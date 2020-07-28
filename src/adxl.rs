@@ -326,16 +326,15 @@ impl Adxl{
     }
 
     pub fn clear_interupt(&mut self){
-        let _source:u8 = self._read_cmd(INT_SOURCE);
-        /*
-        self.data_ready = (source>>0b1000000)==1;
-        self.tap = (source>>0b0100000)==1;
-        self.dtap = (source>>0b0010000)==1;
-        self.act = (source>>0b0001000)==1;
-        self.inact = (source>>0b0000100)==1;
-        self.watermark = (source>>0b0000010)==1;
-        self.overrun = (source>>0b0000001)==1;
-        */
+        let source:u8 = self._read_cmd(INT_SOURCE);
+
+        self.data_ready = (source & 0b1000000)>0;
+        self.tap = (source&0b0100000)>0;
+        self.dtap = (source&0b0010000)>0;
+        self.act = (source&0b0001000)>0;
+        self.inact = (source&0b0000100)>0;
+        self.watermark = (source&0b0000010)>0;
+        self.overrun = (source&0b0000001)>0;
     }
     pub fn clear_settings(&mut self){
         self.set_tap_threshold(0.0);
