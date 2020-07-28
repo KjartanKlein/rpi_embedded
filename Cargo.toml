@@ -1,6 +1,6 @@
 [package]
 name = "rpi_embedded"
-version = "0.0.3" # Also update html_root_url in lib.rs
+version = "0.0.4" # Also update html_root_url in lib.rs
 edition = "2018"
 authors = ["Kjartan Bjarmi Arnason Klein <kjartanbklein@gmail.com>"]
 description = "Interface for the Raspberry Pi's GPIO, I2C, PWM, SPI and UART peripherals."
