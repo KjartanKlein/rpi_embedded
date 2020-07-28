@@ -45,3 +45,5 @@ pub mod pwm;
 pub mod spi;
 pub mod system;
 pub mod uart;
+pub mod servo;
+pub mod adxl;

@@ -458,6 +458,7 @@ impl Uart {
     pub fn new_bt(baud_rate: u32, parity: Parity, data_bits: u8, stop_bits: u8) -> Result<Uart> {
         Self::with_path("/dev/rfcomm0", baud_rate, parity, data_bits, stop_bits)
     }
+
     ///
     pub fn with_path<P: AsRef<Path>>(
         path: P,
@@ -937,13 +938,7 @@ impl Uart {
         })
     }
 
-    pub fn read(&mut self) -> Result<String> {
-        let mut buffer = [0u8; 255];
-        let k = self.read_bytes(&mut buffer)?;
-        //let mut out = String::with_capacity(255);
-        let out = str::from_utf8(&buffer[0..k]).unwrap().to_string();
-        Ok(out)
-    }
+
 
 
     /// Sends the contents of `buffer` to the external device.
@@ -994,5 +989,63 @@ impl Uart {
     /// Discards all data in the input and/or output queue.
     pub fn flush(&self, queue_type: Queue) -> Result<()> {
         termios::flush(self.inner.fd, queue_type)
+    }
+}
+
+impl Uart {
+    pub fn set_bt()->Result<Uart>{
+        Self::with_path("/dev/rfcomm0", 115200, Parity::None, 8, 1)
+    }
+    pub fn set()->Result<Uart>{
+        Self::with_path("/dev/serial0", 115200, Parity::None, 8, 1)
+    }
+
+    pub fn read(&mut self) -> Result<String> {
+        let mut buffer = [0u8; 255];
+        let k = self.read_bytes(&mut buffer)?;
+        //let mut out = String::with_capacity(255);
+        let out = str::from_utf8(&buffer[0..k]).unwrap().to_string();
+        Ok(out)
+    }
+
+    pub fn read_until(&mut self,c : char)-> Result<String>{
+        let mut string = [0u8;255];
+        let mut end:usize =1;
+        let mut cond = 0;
+        while cond ==0 {
+            let mut buffer = [0u8;255];
+            let k = self.read_bytes(&mut buffer).expect("Something failed in reading the uart");
+            if k > 0 && k<255{
+                for i in 0..k{
+                    if buffer[i] == c as u8 {
+                        cond = 1;
+                        break;
+                    }else{
+                        string[end-1] = buffer[i];
+                        end =end+1;
+                    }
+                }
+            }
+        }
+        let message :&str = str::from_utf8(&string).expect("Convertion failed");
+        let out:String =message.trim_matches(char::from('\0')).into();
+        Ok(out)
+    }
+
+    pub fn read_csv<T: std::str::FromStr>(&mut self, buffer: &mut [T])->Result<u8>{
+        let s:String = self.read_until('\n').unwrap();
+        let v: Vec<&str>= s.split(',').collect();
+        if v.len() == 0 {
+            Ok(0u8)
+        } else {
+            for i in 0..v.len(){
+                match  v[i].parse::<T>(){
+                    Ok(k) => {buffer[i] = k},
+                    Err(_) => {break;},
+                }
+            }
+            Ok(v.len() as u8)
+        }
+
     }
 }

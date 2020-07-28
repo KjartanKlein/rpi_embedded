@@ -465,6 +465,11 @@ impl I2c {
         Ok(())
     }
 
+    pub fn cmd_read(&self, command: u8, buffer: u8) -> Result<()>{
+        ioctl::i2c_block_read(self.i2cdev.as_raw_fd(), command, &mut [buffer])?;
+        Ok(())
+    }
+
     /// Sends an 8-bit `command` followed by a multi-byte `buffer`.
     ///
     /// `block_write` can write a maximum of 32 bytes. Any additional data contained
@@ -481,6 +486,11 @@ impl I2c {
     pub fn block_write(&self, command: u8, buffer: &[u8]) -> Result<()> {
         ioctl::i2c_block_write(self.i2cdev.as_raw_fd(), command, buffer)?;
 
+        Ok(())
+    }
+
+    pub fn cmd_write(&self, command: u8, buffer: u8) -> Result<()>{
+        ioctl::i2c_block_write(self.i2cdev.as_raw_fd(), command, &mut [buffer])?;
         Ok(())
     }
 
