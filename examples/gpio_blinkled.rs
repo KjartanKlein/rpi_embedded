@@ -72,5 +72,4 @@ fn main() -> Result<(), Box<dyn Error>> {
         pin_2.toggle();
         thread::sleep(Duration::from_millis(500));
     }
-
 }
