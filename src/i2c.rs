@@ -465,8 +465,8 @@ impl I2c {
         Ok(())
     }
 
-    pub fn cmd_read(&self, command: u8, buffer: u8) -> Result<()>{
-        ioctl::i2c_block_read(self.i2cdev.as_raw_fd(), command, &mut [buffer])?;
+    pub fn cmd_read(&self, command: u8, buffer: &mut [u8]) -> Result<()>{
+        ioctl::i2c_block_read(self.i2cdev.as_raw_fd(), command, buffer)?;
         Ok(())
     }
 
