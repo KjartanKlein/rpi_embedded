@@ -1031,7 +1031,9 @@ impl Uart {
         let out:String =message.trim_matches(char::from('\0')).into();
         Ok(out)
     }
-
+    pub fn read_line(&mut self)-> Result<String>{
+        self.read_until('\n')
+    }
     pub fn read_csv<T: std::str::FromStr>(&mut self, buffer: &mut [T])->Result<u8>{
         let s:String = self.read_until('\n').unwrap();
         let v: Vec<&str>= s.split(',').collect();
