@@ -21,7 +21,7 @@ fn main(){
     thread::sleep(Duration::from_millis(5000));
 
     let mut buffer_r = [0u8;3];
-    let mut buffer_w = [0u8;3];
+    let mut buffer_w = [10u8;3];
 
     i2c.block_write(0x1E, &mut buffer_w).expect("block write failed");
     i2c.block_read(0x1E as u8,&mut buffer_r).expect("block read failed");
