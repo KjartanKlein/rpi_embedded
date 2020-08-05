@@ -18,21 +18,23 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 // DEALINGS IN THE SOFTWARE.
 
-//! RPPAL provides access to the Raspberry Pi's GPIO, I2C, PWM, SPI and UART
-//! peripherals through a user-friendly interface. In addition to peripheral
-//! access, RPPAL also offers support for USB to serial adapters. The library
+//! rpi_embedded is a fork of the RPPAL library. This fork is made to increase the usability
+//! of the RPPAL library. Spesificaly making it more user friendly and beginer friendly
+//! rpi_embedded provides access to the Raspberry Pi's GPIO, I2C, PWM, SPI, UART and Bluetooth
+//! peripherals. There is also a ADXL345 and pwm servo library included for ease of use.
+//! RPPAL also offers support for USB to serial adapters. The library
 //! can be used in conjunction with a variety of platform-agnostic drivers
 //! through its `embedded-hal` trait implementations by enabling the optional
-//! `hal` feature.
+//! `hal` feature. However the new functions included in rpi_embedded might fail.
 //!
-//! RPPAL requires Raspbian or any similar, recent, Linux distribution. Both
-//! `gnu` and `musl` libc targets are supported. The library is compatible with
+//! rpi_embedded requires Raspbian or any similar, recent, Linux distribution.
+//! rpie_embedded has only been tested on Rpi Zero W but RPPAL is compatible with
 //! the Raspberry Pi A, A+, B, B+, 2B, 3A+, 3B, 3B+, 4B, CM, CM 3, CM 3+, Zero and
-//! Zero W. Backwards compatibility for minor revisions isn't guaranteed until
-//! v1.0.0.
+//! Zero W. In theory it should all work except for bluetooth maybe.
+//!
 
 // Used by rustdoc to link other crates to rppal's docs
-#![doc(html_root_url = "https://docs.rs/rppal/0.11.3")]
+#![doc(html_root_url = "https://docs.rs/rpi_embedded")]
 
 #[macro_use]
 mod macros;

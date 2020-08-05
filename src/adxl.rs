@@ -1,3 +1,24 @@
+//! Interface for the accelerometer ADXL345 using I2C
+//!
+//! Refer to the I2C documentation to see how it is physicaly connected.
+//! The library allows the user to wakeup the accelerometer and read from it reliably
+//! it also calulates the rotations (roll and pitch).
+//!
+//! Interupts are currently in development and should be out soon
+//!
+//! ## Basic usage
+//! this example should show basic usage of the library
+//! # Examples
+//! let mut accel = Adxl::new();
+//! accel.start();
+//! accel.get_offsets();
+//! accel.get_power_status();
+//! println!("I2C ID: {} \t Power Status: {} \t XYZ Offsets ({}, {}, {})",accel.id, accel.power_status, accel.offsets[0],accel.offsets[1],accel.offsets[2]);
+//! accel.set_power_status(8);
+//! accel.get_data();
+//! println!("GOT clean [ {:?} ]",accel.data);
+//! println!("Got rotations[ {} , {} ]",accel.pitch , accel.roll);
+
 #![allow(dead_code)]  //removes some warnings for the user
 //use std::error::Error; //Might add in future but is useless for now
 
@@ -47,6 +68,7 @@ pub struct Adxl {
     pub raw_data: [u8;6],       //raw data from the accelerometer
     pub data: [i16;3],
 
+    //currently testing theese, ignore them for now
     pub free_fall: bool,
     pub tap: bool,
     pub dtap: bool,
@@ -56,25 +78,23 @@ pub struct Adxl {
     pub overrun: bool,
     pub watermark: bool,
 
+    ///pitch and roll
     pub pitch: f64,
     pub roll: f64,
-
-
 }
 
 
 //This part contains all functions for the ACCELEROMETER
 
 impl Adxl {
-    // Creates a empty struct to allow usage and starts the i2c channel
-    //adding strt into this fails for it cant create a new self while working
-    //with the current self, basicly keep anything with a refrence to self out of
-    //this function
+    /// Creates a empty struct to allow usage and starts the i2c channel
+    /// Sets it to the default address which is 0x53
+    /// # Example
+    /// let mut adxl = Adxl::new();
     pub fn new()-> Self{
         let mut _adxl = I2c::new().expect("I2c init failed");   //Starts a new i2c communication
         _adxl.set_slave_address(ADXL_ADD).expect("SETTING SLAVE FAILED"); //Sets the addres ass ADXL_ADD
-        //NOTE might add code to allow switching of addresses
-        Self{
+        let mut adxl = Self{
             //Null values for all except for the i2c channel
             adxl: _adxl,
             id: 0,
@@ -95,13 +115,19 @@ impl Adxl {
             pitch: 0.0,
             roll: 0.0,
 
-        }
+        };
+        adxl.start();
+        adxl
     }
+    /// Creates a empty struct to allow usage and starts the i2c channel
+    /// Sets it to a adress of your choise
+    /// # Example
+    /// let mut adxl = Adxl::new_alt_adress(0x21);
+
     pub fn new_alt_adress(address:u16)-> Self{
         let mut _adxl = I2c::new().expect("I2c init failed");   //Starts a new i2c communication
-        _adxl.set_slave_address(address).expect("SETTING SLAVE FAILED"); //Sets the addres ass ADXL_ADD
-        //NOTE might add code to allow switching of addresses
-        Self{
+        _adxl.set_slave_address(address).expect("SETTING SLAVE FAILED"); //Sets the addres address
+        let mut adxl = Self{
             //Null values for all except for the i2c channel
             adxl: _adxl,
             id: 0,
@@ -122,9 +148,12 @@ impl Adxl {
             pitch: 0.0,
             roll: 0.0,
 
-        }
+        };
+        adxl.start();
+        adxl
     }
-    //Simply gets the defult data, so the user can begin
+    /// Simply gets the defult data, so the user can begin
+    /// Should be used in the new function but something went wrong, needs testing
     pub fn start(&mut self){
         self.id = self.get_id(); //gets the id and saves it
         //simple check, the id value should never be 0 or the get_id failed
@@ -133,36 +162,39 @@ impl Adxl {
         self.power_status = self.get_power_status();
     }
 
-    //This function setts the sampling sampling rate
+    ///This function sets the sampling sampling rate, some libraries do this so I included it
+    /// not neccecery to use
     pub fn set_sampling(&self){
         self._write_cmd(BW_RATE,0x0A as u8);
     }
-
+    /// Sets the default format
     pub fn set_format(&self) {
         self._write_cmd(DATA_FORMAT, 0x08 as u8);
     }
-    //uses the private function _read_cmd to read the current id and returns it
+    ///uses the private function _read_cmd to read the current id and returns it
     pub fn get_id(&mut self) -> u8{
         self.id = self._read_cmd(DEVID); //sends 0x00 as read command saved as DEVID
         self.id
     }
-    //uses the private function _read_cmd to read the current powerstatus and returns it
+    ///uses the private function _read_cmd to read the current powerstatus and returns it
     pub fn get_power_status(&mut self) -> u8{
         self.power_status = self._read_cmd(POWER_CTL);
         self.power_status
     }
-    //uses the private function _write_cmd to read the current id and returns it
+    /// uses the private function _write_cmd to read the current id and returns it
     pub fn set_power_status(&self,cmd:u8)->(){
         self._write_cmd(POWER_CTL,cmd);
         let cmd2 = self._read_cmd(POWER_CTL);
         if cmd2 != cmd {println!("POWERCTL, read and write mismatch")}
     }
-    //uses the block read function from RPPAL to get 6 values of data from the accelerometer
-    //The block read command reads from address DATAX0 to DATAX0 + length(self.raw_data) -1
-    //returns it to the struct
+    ///uses the block read function from rpi_embedded to get 6 values of data from the accelerometer
+    ///The block read command reads from address DATAX0 to DATAX0 + length(self.raw_data) -1
+    ///returns it to the struct
     pub fn get_data_raw(&mut self){
         self.adxl.block_read(DATAX0,&mut self.raw_data).expect("READING RAW DATA FAILED");
     }
+    ///gets the raw data, and calulates the values
+    /// the raw data has a low and high byte so it needs to be combined
     pub fn get_data(&mut self){
             self.get_data_raw();
             self.data[0] = (self.raw_data[0] as u16  +(self.raw_data[1] as u16).rotate_right(8)) as i16;
@@ -170,6 +202,7 @@ impl Adxl {
             self.data[2] = (self.raw_data[4] as u16  +(self.raw_data[5] as u16).rotate_right(8)) as i16;
             self.rotations();
     }
+    ///calculates rotations from worked data.
     pub fn rotations(&mut self){
         let x = self.data[0] as f64;
         let y = self.data[1] as f64;
@@ -178,26 +211,26 @@ impl Adxl {
         self.pitch = -x.atan2((y*y + z*z).sqrt())*57.3;
     }
 
-    //uses the block read function from RPPAL to get 3 values of data from the accelerometer
-    //The block read command reads from address OFSX to OFSX + length(self.iffsets) -1
-    //returns it to the struct
+    ///uses the block read function from rpi_embedded to get 3 values of data from the accelerometer
+    ///The block read command reads from address OFSX to OFSX + length(self.iffsets) -1
+    ///returns it to the struct
     pub fn get_offsets(&mut self){
         self.adxl.block_read(OFSX,&mut self.offsets).expect("READING OFFSETS FAILED");
     }
-    //uses the block write function from RPPAL to set 3 values on the accelerometer
-    //The block write command writes from address OFSX to OFSX + length(self.offsets) -1
-    // a check can be forced by doing get offsets and comparing, how ever this slows down
-    //the code so it is made up to the user
+    /// uses the block write function from rpi_embedded to set 3 values on the accelerometer
+    /// The block write command writes from address OFSX to OFSX + length(self.offsets) -1
+    /// a check can be forced by doing get offsets and comparing, how ever this slows down
+    /// the code so it is made up to the user
     pub fn set_offsets(&mut self, mut buffer:[u8;3]){
         self.adxl.block_write(OFSX,&mut buffer).expect("WRITING OFFSETS FAILED");
     }
-    //Private function that reads of one register nr cmd and returns it as u8
+    /// Private function that reads of one register nr 'cmd' and returns the value as u8
     fn _read_cmd(&self,cmd:u8) ->u8{
         let mut buffer = [0u8;1]; //buffer of length one to get only 1 value out
         self.adxl.block_read(cmd , &mut buffer).expect("Failure in Read CMD");
         buffer[0]
     }
-    //Private function that writes to one register nr cmd and gives it the value data
+    ///Private function that writes to one register nr 'cmd' and gives it the value data
     fn _write_cmd(&self,cmd:u8,data:u8){
         let mut buffer = [0u8;1];//buffer of length 1 to only get 1 value out
         buffer[0]=data;//value passed into buffer
@@ -207,24 +240,27 @@ impl Adxl {
 
 // THis function has all the interupt thingies
 impl Adxl{
+    ///UNTESTED should set the tap threshold as the datasheet specifies
     pub fn set_tap_threshold(&self,cmd:f32){
         let mut out_big:f32 = cmd/0.0625;
         if out_big < 0.0      { out_big = 0.0}
         if out_big > 255.0    { out_big = 255.0}
         self._write_cmd(THRESH_TAP, out_big as u8);
     }
+    ///UNTESTED should get the tap threshold as the datasheet specifies
     pub fn get_tap_threshold(&self)->f32{
         (self._read_cmd(THRESH_TAP) as f32) *0.0625
     }
 
 
-
+///UNTESTED should set the tap duration as the datasheet specifies
     pub fn set_tap_duration(&self,cmd:f32){
         let mut out_big:f32 = cmd/0.000625;
         if out_big < 0.0      { out_big = 0.0}
         if out_big > 255.0    { out_big = 255.0}
         self._write_cmd(DUR, out_big as u8);
     }
+    ///UNTESTED should get the tap duration as the datasheet specifies
     pub fn get_tap_duration(&self)->f32{
         (self._read_cmd(DUR) as f32) *0.000625
     }

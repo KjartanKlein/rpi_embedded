@@ -1,9 +1,8 @@
 use std::thread;
 use std::time::Duration;
-
 use rpi_embedded::adxl::Adxl;
-fn main() {
 
+fn main() {
     let mut accel = Adxl::new();
     accel.start();
     accel.get_offsets();
