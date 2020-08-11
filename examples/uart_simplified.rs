@@ -7,7 +7,7 @@ use std::time::Duration;
 use std::thread;
 fn main(){
 
-//let mut uart = Uart::set().unwrap();
+// note that setting a wire between rx and tx makes this code work,
 let mut uart = Uart::new(115_200, Parity::None, 8, 1).unwrap();
 //THis is the same as calling
 //   Uart::new(115_200, Parity::None, 8, 1). As this is used as a defualt mode
@@ -28,6 +28,8 @@ thread::sleep(Duration::from_millis(500));
 let mut buffer = [0u32;24];
 
 uart.write(String::from("52,53,54\n")).unwrap();
+// reads until a new line then tries to parse it into values.
+// returns how many sucessful results as k and the values in the buffer
 let k = uart.read_csv(&mut buffer).unwrap();
 print!("Result 3| {}",buffer[0]);
 for j in 1..k {

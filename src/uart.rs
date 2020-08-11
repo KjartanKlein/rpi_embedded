@@ -459,7 +459,9 @@ impl Uart {
         Self::with_path("/dev/rfcomm0", baud_rate, parity, data_bits, stop_bits)
     }
 
-    ///
+    /// bread and butter of setup, opens the path and makes sre it works,
+    /// note that fir okuetooth no pins are modified
+    /// this can be used to get custom paths.
     pub fn with_path<P: AsRef<Path>>(
         path: P,
         baud_rate: u32,
@@ -921,13 +923,14 @@ impl Uart {
     /// Receives incoming data from the external device and stores it in
     /// `buffer`.
     ///
-    /// `read` operates in one of four (non)blocking modes, depending on the
+    /// `read_bytes` operates in one of four (non)blocking modes, depending on the
     /// settings configured by [`set_read_mode`]. By default, `read` is configured
     /// as non-blocking.
     ///
     /// Returns how many bytes were read.
     ///
     /// [`set_read_mode`]: #method.set_read_mode
+    /// note this was formaly read, i changed it so it is bytes as it only does that
     pub fn read_bytes(&mut self, buffer: &mut [u8]) -> Result<usize> {
         self.inner.device.read(buffer).or_else(|e| {
             if e.kind() == io::ErrorKind::WouldBlock {
@@ -943,13 +946,14 @@ impl Uart {
 
     /// Sends the contents of `buffer` to the external device.
     ///
-    /// `write` operates in either blocking or non-blocking mode, depending on the
+    /// `write_bytes` operates in either blocking or non-blocking mode, depending on the
     /// settings configured by [`set_write_mode`]. By default, `write` is configured
     /// as non-blocking.
     ///
     /// Returns how many bytes were written.
     ///
     /// [`set_write_mode`]: #method.set_write_mode
+    /// note this was formaly write, I changed it so it is bytes as it only does that
     pub fn write_bytes(&mut self, buffer: &[u8]) -> Result<usize> {
         // We only need to toggle O_NONBLOCK when read() is configured as
         // blocking. If read() is non-blocking, either with_path() or
@@ -977,9 +981,6 @@ impl Uart {
         result
     }
 
-    pub fn write(&mut self, message : String) -> Result<usize>{
-        self.write_bytes(message.as_bytes())
-    }
 
     /// Blocks until all data in the output queue has been transmitted.
     pub fn drain(&self) -> Result<()> {
@@ -999,7 +1000,12 @@ impl Uart {
     pub fn set()->Result<Uart>{
         Self::with_path("/dev/serial0", 115200, Parity::None, 8, 1)
     }
-
+    ///simply write bytes parsed as a String
+    /// in future this should be able to take in numbers aswell
+    pub fn write(&mut self, message : String) -> Result<usize>{
+        self.write_bytes(message.as_bytes())
+    }
+    /// usses read_bytes to read a String instead
     pub fn read(&mut self) -> Result<String> {
         let mut buffer = [0u8; 255];
         let k = self.read_bytes(&mut buffer)?;
@@ -1007,7 +1013,7 @@ impl Uart {
         let out = str::from_utf8(&buffer[0..k]).unwrap().to_string();
         Ok(out)
     }
-
+    /// reads until a certain char appears, this is aspecialy usefull when doing CSV
     pub fn read_until(&mut self,c : char)-> Result<String>{
         let mut string = [0u8;255];
         let mut end:usize =1;
@@ -1031,9 +1037,11 @@ impl Uart {
         let out:String =message.trim_matches(char::from('\0')).into();
         Ok(out)
     }
+    /// reads a line from the UART
     pub fn read_line(&mut self)-> Result<String>{
         self.read_until('\n')
     }
+    /// reads values as a CSV and returns them in the buffer
     pub fn read_csv<T: std::str::FromStr>(&mut self, buffer: &mut [T])->Result<u8>{
         let s:String = self.read_until('\n').unwrap();
         let v: Vec<&str>= s.split(',').collect();

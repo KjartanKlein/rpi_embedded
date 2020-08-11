@@ -44,8 +44,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     // Retrieve the GPIO pin and configure it as an output.
     // This is the longest method to get stuff done but it is used in other moethods
     let mut pin_0 = Gpio::new()?.get(GPIO_LED_0)?.into_output();
+    //this method is the simpler way to do stuff more beginer freindly
     let mut pin_1 = Gpio::output(GPIO_LED_1)?;
-    let mut pin_2 = Gpio::io(GPIO_LED_2, Mode::Output)?; //This one can switch between input and output easily, use with caution
+    //This one can switch between input and output easily, use with caution
+    let mut pin_2 = Gpio::io(GPIO_LED_2, Mode::Output)?;
     loop {
         //set the LEDS one by one to high
         pin_0.set_high();

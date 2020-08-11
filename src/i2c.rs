@@ -464,7 +464,9 @@ impl I2c {
 
         Ok(())
     }
-
+    /// sends an 8-bit command and then put values read to the buffer
+    /// DEV NOTE: This function might be cahnged later to not have a referenced buffer,
+    /// the problem with it is that I want to use IOctl to fix this.
     pub fn cmd_read(&self, command: u8, buffer: &mut [u8]) -> Result<()>{
         ioctl::i2c_block_read(self.i2cdev.as_raw_fd(), command, buffer)?;
         Ok(())
@@ -488,7 +490,8 @@ impl I2c {
 
         Ok(())
     }
-
+    /// sends a 8 bitcommand and then reads from the buffer,
+    /// dev note might change somethings here later
     pub fn cmd_write(&self, command: u8, buffer: u8) -> Result<()>{
         ioctl::i2c_block_write(self.i2cdev.as_raw_fd(), command, &mut [buffer])?;
         Ok(())

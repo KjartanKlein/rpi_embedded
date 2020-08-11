@@ -32,6 +32,8 @@
 //! the Raspberry Pi A, A+, B, B+, 2B, 3A+, 3B, 3B+, 4B, CM, CM 3, CM 3+, Zero and
 //! Zero W. In theory it should all work except for bluetooth maybe.
 //!
+//! Note that this fork is still in production, and might change massivly from version to version
+
 
 // Used by rustdoc to link other crates to rppal's docs
 #![doc(html_root_url = "https://docs.rs/rpi_embedded")]
